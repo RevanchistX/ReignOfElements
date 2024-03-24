@@ -1,5 +1,3 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -39,18 +37,15 @@ public class UIControls : MonoBehaviour
         KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R
     };
 
-    private List<KeyCode> _inputSequence = new();
+    private List<KeyCode> _inputSequence;
     private MeshRenderer _meshRenderer;
+    private TextMeshProUGUI _sequenceUI;
 
     private void Awake()
     {
         _meshRenderer = GetComponent<MeshRenderer>();
-    }
-
-    private void Start()
-    {
         var fontColor = new Color32(255, 0, 0, 100);
-        // var backgroundColor = new Color32(255, 0, 0, 100);
+
         var spellbook = new GameObject();
         var spellbookTextComponent = spellbook.AddComponent<TextMeshProUGUI>();
         spellbookTextComponent.name = "Spellbook";
@@ -58,7 +53,6 @@ public class UIControls : MonoBehaviour
         spellbookTextComponent.fontSize = 20;
         spellbookTextComponent.text = "Spellbook";
         spellbookTextComponent.autoSizeTextContainer = true;
-        spellbookTextComponent.alignment = TextAlignmentOptions.Right;
 
         var canvasTransform = uiCanvas.transform;
         spellbookTextComponent.transform.SetParent(canvasTransform);
@@ -67,7 +61,7 @@ public class UIControls : MonoBehaviour
         var position = canvasTransform.position;
         var spellbookPosition = position + new Vector3(-sizeDelta.x / 2 + 110, sizeDelta.y / 2 - 50, position.z);
         spellbookTextComponent.transform.position = spellbookPosition;
-        Debug.Log(spellbookPosition);
+
         var index = 0;
         foreach (var element in elements)
         {
@@ -78,13 +72,21 @@ public class UIControls : MonoBehaviour
             spellTextComponent.name = element.Key;
             spellTextComponent.text = element.Key + ": " + string.Join(" -> ", element.Value);
             spellTextComponent.autoSizeTextContainer = true;
-            spellTextComponent.alignment = TextAlignmentOptions.Right;
             spellTextComponent.transform.SetParent(spellbookTextComponent.transform);
             var y = -(50 + index * 25);
             var spellPosition = spellbookPosition + new Vector3(0, y, 0);
             spellTextComponent.transform.position = spellPosition;
             index++;
         }
+
+        var sequence = new GameObject();
+        _sequenceUI = sequence.AddComponent<TextMeshProUGUI>();
+        _sequenceUI.faceColor = fontColor;
+        _sequenceUI.fontSize = 15;
+        _sequenceUI.name = "Sequence";
+        _sequenceUI.autoSizeTextContainer = true;
+        _sequenceUI.transform.SetParent(uiCanvas.transform);
+        _sequenceUI.transform.position = position + new Vector3(0, sizeDelta.y / 2, 0);
     }
 
     private void FixedUpdate()
@@ -94,25 +96,18 @@ public class UIControls : MonoBehaviour
         if (!isCtrlPressed)
         {
             _inputSequence = new List<KeyCode>();
+            _sequenceUI.text = "";
             return;
         }
 
         if (_inputSequence.Count == 0) return;
-        foreach (var kvPair in elements)
+        _sequenceUI.text = string.Join("", _inputSequence);
+        foreach (var kvPair in from kvPair in elements let elementSequence = kvPair.Value where elementSequence.Count == _inputSequence.Count where elementSequence.SequenceEqual(_inputSequence) select kvPair)
         {
-            var elementSequence = kvPair.Value;
-            if (elementSequence.Count != _inputSequence.Count) continue;
-            if (!elementSequence.SequenceEqual(_inputSequence))
-            {
-                continue;
-            }
-
             if (colors.TryGetValue(kvPair.Key, out var elementColor))
             {
                 _meshRenderer.materials[0].SetColor("_Color", elementColor);
             }
-
-            Debug.Log("element: " + kvPair.Key);
             _inputSequence = new List<KeyCode>();
             uiCanvas.enabled = false;
             break;
