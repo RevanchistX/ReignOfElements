@@ -5,3 +5,5 @@
 3. Press play
 4. Hold `CTRL` to open the `Spellbook`
 5. Input the spell sequence to cast the spell
+
+[Spellbook Demo](examples/spellbook.mp4)
