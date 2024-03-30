@@ -6,6 +6,10 @@ using UnityEngine;
 public class UIControls : MonoBehaviour
 {
     [SerializeField] private Canvas uiCanvas;
+    private List<KeyCode> _inputSequence;
+    private MeshRenderer _meshRenderer;
+    private TextMeshProUGUI _sequenceUI;
+    private Light _light;
 
     private Dictionary<string, List<KeyCode>> elements = new()
     {
@@ -37,9 +41,6 @@ public class UIControls : MonoBehaviour
         KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R
     };
 
-    private List<KeyCode> _inputSequence;
-    private MeshRenderer _meshRenderer;
-    private TextMeshProUGUI _sequenceUI;
 
     private void Awake()
     {
@@ -87,6 +88,12 @@ public class UIControls : MonoBehaviour
         _sequenceUI.autoSizeTextContainer = true;
         _sequenceUI.transform.SetParent(uiCanvas.transform);
         _sequenceUI.transform.position = position + new Vector3(0, sizeDelta.y / 2, 0);
+
+        _light = gameObject.AddComponent<Light>();
+        _light.type = LightType.Spot;
+        _light.spotAngle = 100f;
+        _light.enabled = false;
+        _light.intensity = 8f;
     }
 
     private void FixedUpdate()
@@ -102,12 +109,19 @@ public class UIControls : MonoBehaviour
 
         if (_inputSequence.Count == 0) return;
         _sequenceUI.text = string.Join("", _inputSequence);
-        foreach (var kvPair in from kvPair in elements let elementSequence = kvPair.Value where elementSequence.Count == _inputSequence.Count where elementSequence.SequenceEqual(_inputSequence) select kvPair)
+        foreach (var kvPair in from kvPair in elements
+                 let elementSequence = kvPair.Value
+                 where elementSequence.Count == _inputSequence.Count
+                 where elementSequence.SequenceEqual(_inputSequence)
+                 select kvPair)
         {
             if (colors.TryGetValue(kvPair.Key, out var elementColor))
             {
                 _meshRenderer.materials[0].SetColor("_Color", elementColor);
+                _light.color = elementColor;
+                _light.enabled = true;
             }
+
             _inputSequence = new List<KeyCode>();
             uiCanvas.enabled = false;
             break;

@@ -9,19 +9,19 @@ public class Movement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // var horizontal = Input.GetAxis("Horizontal");
-        // var vertical = Input.GetAxis("Vertical");
-
-        // var movement = transform.forward * vertical + transform.right * horizontal;
-        // var mouseX = Input.GetAxis("Mouse X");
-        //
-        // var rotation = transform.eulerAngles;
-        // transform.eulerAngles = new Vector3(rotation.x, rotation.y + mouseX, rotation.z);
-
-        // camera.transform.LookAt(transform);
-        // var isCtrlPressed = Input.GetKey(KeyCode.LeftControl);
-        // if (isCtrlPressed) return;
-        // controller.Move(movement * (playerSpeed * Time.fixedDeltaTime));
+        var horizontal = Input.GetAxis("Horizontal");
+        var vertical = Input.GetAxis("Vertical");
+        
+        var movement = transform.forward * vertical + transform.right * horizontal;
+        var mouseX = Input.GetAxis("Mouse X");
+        
+        var rotation = transform.eulerAngles;
+        transform.eulerAngles = new Vector3(rotation.x, rotation.y + mouseX, rotation.z);
+        
+        camera.transform.LookAt(transform);
+        var isCtrlPressed = Input.GetKey(KeyCode.LeftControl);
+        if (isCtrlPressed) return;
+        controller.Move(movement * (playerSpeed * Time.fixedDeltaTime));
     }
 }
 
