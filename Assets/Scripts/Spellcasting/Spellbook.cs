@@ -1,15 +1,24 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.UI;
+using Debug = UnityEngine.Debug;
+using Quaternion = UnityEngine.Quaternion;
+using Vector2 = UnityEngine.Vector2;
+using Vector3 = UnityEngine.Vector3;
 
 namespace Spellcasting
 {
     public class Spellbook : MonoBehaviour
     {
         [SerializeField] private Canvas uiCanvas;
+
+        private List<GameObject> pillars = new();
 
         private List<Spell> spellbook = new()
         {
@@ -48,6 +57,8 @@ namespace Spellcasting
         };
 
 
+        private Camera _camera;
+
         private readonly List<KeyCode> _allowedKeyCodes = new()
         {
             KeyCode.Q, KeyCode.W, KeyCode.E, KeyCode.R
@@ -59,6 +70,15 @@ namespace Spellcasting
 
         private void Awake()
         {
+            _camera = (Camera)FindObjectOfType(typeof(Camera));
+            _camera.transform.position = gameObject.transform.position;
+            _camera.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
+            // var mouseX = Input.GetAxis("Mouse X");
+            //
+            // var rotation = transform.eulerAngles;
+            // transform.eulerAngles = new Vector3(rotation.x, rotation.y + mouseX, rotation.z);
+            // _camera.transform.LookAt(transform);
+            //
             _meshRenderer = GetComponent<MeshRenderer>();
             var fontColor = new Color32(255, 255, 255, 255);
 
@@ -118,15 +138,56 @@ namespace Spellcasting
                 var x = radius * Mathf.Cos(angle);
                 var z = radius * Mathf.Sin(angle);
                 var elementPillar = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                elementPillar.transform.position = new Vector3(x, 0, z);
-                elementPillar.name = $"ElementalPillar{element.Name}";
+                elementPillar.transform.position = new Vector3(x, 1, z);
+                elementPillar.name = $"Pillar_{element.Name}";
                 elementPillar.GetComponent<MeshRenderer>().materials[0].SetColor("_Color", element.Color);
+                pillars.Add(elementPillar);
                 i++;
             }
         }
 
         private void FixedUpdate()
         {
+            // var rotation = Vector2.zero;
+            // rotation.x += Input.GetAxis("Mouse X") * 2f;
+            // rotation.y += Input.GetAxis("Mouse Y") * 2f;
+            // rotation.y = Mathf.Clamp(rotation.y, -88f, 88f);
+            // var xQuat = Quaternion.AngleAxis(rotation.x, Vector3.up);
+            // var yQuat = Quaternion.AngleAxis(rotation.y, Vector3.left);
+            //
+            // transform.localRotation = xQuat * yQuat; //Quaternion
+            // _camera.transform.LookAt(transform);
+            // // _camera.transform.rotation = gameObject.transform.rotation;
+            // var position = Input.mousePosition;
+            // position.z = 10f;
+            // // position.z = _camera.nearClipPlane + 1;
+            // var point = _camera.ScreenToWorldPoint(position) * 100;
+            // point.y = 1;
+            //
+            // Debug.DrawLine(transform.position, point, Color.red);
+            // var isRMBDown = Input.GetMouseButtonDown(1);
+            // var isRMBUp = Input.GetMouseButtonUp(1);
+            // var stopwatch = new Stopwatch();
+            // if (isRMBDown)
+            // {
+            //     stopwatch.Start();
+            //     Debug.Log("i am pressed");
+            //     if (Physics.Raycast(transform.position, point, out var hitInfo))
+            //     {
+            //         Debug.Log("i am hit");
+            //         Debug.Log(hitInfo.transform.gameObject.name);
+            //         var pillar = hitInfo.transform.gameObject;
+            //         _camera.transform.LookAt(pillar.transform);
+            //         // _meshRenderer.materials[0]
+            //         //     .SetColor("_Color", pillar.GetComponent<MeshRenderer>().materials[0].color);
+            //         // return;
+            //     }
+            //     stopwatch.Stop();
+            //     Debug.Log(stopwatch.ElapsedMilliseconds);
+            //     return;
+            //     // Debug.DrawLine(Vector3.zero, Vector3.up * 100, Color.red);
+            // }
+
             var isCtrlPressed = Input.GetKey(KeyCode.LeftControl);
             uiCanvas.enabled = isCtrlPressed;
             if (!isCtrlPressed)
