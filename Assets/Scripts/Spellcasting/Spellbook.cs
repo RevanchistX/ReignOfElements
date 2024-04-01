@@ -71,14 +71,8 @@ namespace Spellcasting
         private void Awake()
         {
             _camera = (Camera)FindObjectOfType(typeof(Camera));
-            _camera.transform.position = gameObject.transform.position;
-            _camera.transform.rotation = new Quaternion(0f, 0f, 0f, 0f);
-            // var mouseX = Input.GetAxis("Mouse X");
-            //
-            // var rotation = transform.eulerAngles;
-            // transform.eulerAngles = new Vector3(rotation.x, rotation.y + mouseX, rotation.z);
-            // _camera.transform.LookAt(transform);
-            //
+            var cameraTransform = _camera.transform;
+            cameraTransform.position = gameObject.transform.position;
             _meshRenderer = GetComponent<MeshRenderer>();
             var fontColor = new Color32(255, 255, 255, 255);
 
@@ -146,47 +140,29 @@ namespace Spellcasting
             }
         }
 
+        private Ray _ray;
+        private RaycastHit _hit;
+
         private void FixedUpdate()
         {
-            // var rotation = Vector2.zero;
-            // rotation.x += Input.GetAxis("Mouse X") * 2f;
-            // rotation.y += Input.GetAxis("Mouse Y") * 2f;
-            // rotation.y = Mathf.Clamp(rotation.y, -88f, 88f);
-            // var xQuat = Quaternion.AngleAxis(rotation.x, Vector3.up);
-            // var yQuat = Quaternion.AngleAxis(rotation.y, Vector3.left);
-            //
-            // transform.localRotation = xQuat * yQuat; //Quaternion
-            // _camera.transform.LookAt(transform);
-            // // _camera.transform.rotation = gameObject.transform.rotation;
-            // var position = Input.mousePosition;
-            // position.z = 10f;
-            // // position.z = _camera.nearClipPlane + 1;
-            // var point = _camera.ScreenToWorldPoint(position) * 100;
-            // point.y = 1;
-            //
-            // Debug.DrawLine(transform.position, point, Color.red);
-            // var isRMBDown = Input.GetMouseButtonDown(1);
-            // var isRMBUp = Input.GetMouseButtonUp(1);
-            // var stopwatch = new Stopwatch();
-            // if (isRMBDown)
-            // {
-            //     stopwatch.Start();
-            //     Debug.Log("i am pressed");
-            //     if (Physics.Raycast(transform.position, point, out var hitInfo))
-            //     {
-            //         Debug.Log("i am hit");
-            //         Debug.Log(hitInfo.transform.gameObject.name);
-            //         var pillar = hitInfo.transform.gameObject;
-            //         _camera.transform.LookAt(pillar.transform);
-            //         // _meshRenderer.materials[0]
-            //         //     .SetColor("_Color", pillar.GetComponent<MeshRenderer>().materials[0].color);
-            //         // return;
-            //     }
-            //     stopwatch.Stop();
-            //     Debug.Log(stopwatch.ElapsedMilliseconds);
-            //     return;
-            //     // Debug.DrawLine(Vector3.zero, Vector3.up * 100, Color.red);
-            // }
+            var isRmbDown = Input.GetMouseButtonDown(1);
+            if (isRmbDown)
+            {
+                _ray = _camera.ScreenPointToRay(Input.mousePosition);
+                if (Physics.Raycast(_ray, out _hit))
+                {
+                    var pillar = _hit.transform.gameObject;
+                    var material = pillar.GetComponent<MeshRenderer>().material;
+                    foreach (Transform child in transform)
+                    {
+                        child.gameObject.GetComponent<MeshRenderer>().material = material;
+                    }
+                    
+                    Destroy(pillar);
+                    
+                }
+            }
+
 
             var isCtrlPressed = Input.GetKey(KeyCode.LeftControl);
             uiCanvas.enabled = isCtrlPressed;
