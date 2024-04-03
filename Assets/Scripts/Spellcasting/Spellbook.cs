@@ -1,15 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.UI;
-using Debug = UnityEngine.Debug;
-using Quaternion = UnityEngine.Quaternion;
-using Vector2 = UnityEngine.Vector2;
 using Vector3 = UnityEngine.Vector3;
 
 namespace Spellcasting
@@ -67,12 +59,13 @@ namespace Spellcasting
         private List<KeyCode> _inputSequence;
         private MeshRenderer _meshRenderer;
         private TextMeshProUGUI _sequenceUI;
+        private LineRenderer _lineRenderer;
 
         private void Awake()
         {
-            _camera = (Camera)FindObjectOfType(typeof(Camera));
-            var cameraTransform = _camera.transform;
-            cameraTransform.position = gameObject.transform.position;
+            _lineRenderer = GetComponent<LineRenderer>();
+
+            _camera = Camera.main;
             _meshRenderer = GetComponent<MeshRenderer>();
             var fontColor = new Color32(255, 255, 255, 255);
 
@@ -124,7 +117,7 @@ namespace Spellcasting
 
         private void InitElements()
         {
-            var radius = 5;
+            var radius = 3;
             int i = 0;
             foreach (var element in Element.ELEMENTS)
             {
@@ -145,10 +138,34 @@ namespace Spellcasting
 
         private void FixedUpdate()
         {
+            // _camera.transform.position = transform.position + Vector3.back * 2 + Vector3.up;
+            // _camera.transform.LookAt(transform);
+            // _camera.transform.rotation = transform.rotation;
+            if (_lineRenderer.positionCount > 6) _lineRenderer.positionCount = 0;
+            var isLmbDown = Input.GetMouseButtonDown(0);
+            if (isLmbDown)
+            {
+                var material =
+                    (from Transform child in transform select child.gameObject.GetComponent<MeshRenderer>().material)
+                    .FirstOrDefault();
+
+                var mousePosition = Input.mousePosition;
+                _ray = _camera.ScreenPointToRay(mousePosition);
+                var calculatedMousePosition = _ray.origin + _ray.direction * 10;
+           
+                _lineRenderer.positionCount++;
+                _lineRenderer.SetPosition(_lineRenderer.positionCount - 1, calculatedMousePosition);
+                if (material)
+                {
+                    _lineRenderer.material = material;
+                }
+            }
+
             var isRmbDown = Input.GetMouseButtonDown(1);
             if (isRmbDown)
             {
                 _ray = _camera.ScreenPointToRay(Input.mousePosition);
+                _ray.direction *= 100;
                 if (Physics.Raycast(_ray, out _hit))
                 {
                     var pillar = _hit.transform.gameObject;
@@ -157,9 +174,8 @@ namespace Spellcasting
                     {
                         child.gameObject.GetComponent<MeshRenderer>().material = material;
                     }
-                    
+
                     Destroy(pillar);
-                    
                 }
             }
 
