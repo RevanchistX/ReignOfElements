@@ -15,8 +15,9 @@ public class ElementalReservesUI : MonoBehaviour
             var imageObject = new GameObject();
             var image = (Image)imageObject.AddComponent(typeof(Image));
             imageObject.name = $"{element}Reserves";
-            image.sprite = Resources.Load<Sprite>($"ElementalMeters/Frames/{element}Frame");
+            image.sprite = Resources.Load<Sprite>($"ElementalMeters/Frames/{element}");
             image.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            image.preserveAspect = true;
             var imageTransform = imageObject.transform;
             imageTransform.SetParent(transform);
 
