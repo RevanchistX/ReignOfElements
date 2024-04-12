@@ -7,6 +7,12 @@ using UnityEngine.UI;
 
 public class ElementalReservesUI : MonoBehaviour
 {
+    [Range(0, 8)] [SerializeField] private int itemsPerRow = 4;
+    [Range(0, 100)] [SerializeField] private int widthBetweenItems = 50;
+    [Range(0, 100)] [SerializeField] private int heightBetweenRows = 60;
+    [Range(0, 100)] [SerializeField] private int startingPositionX = 75;
+    [Range(0, 100)] [SerializeField] private int startingPositionY = 10;
+
     private void Awake()
     {
         int i = 0;
@@ -25,20 +31,15 @@ public class ElementalReservesUI : MonoBehaviour
             var rectTransform = elementalMeter.GetComponent<RectTransform>();
             rectTransform.anchorMin = new Vector2(0, 1);
             rectTransform.anchorMax = new Vector2(0, 1);
-
-            const float numberOfRows = 4f;
-            const int widthBetweenItems = 50;
-            const int heightBetweenRows = 60;
-            const int startingPositionX = 75;
-            const int startingPositionY = 10;
-            var xPosition = (i % numberOfRows) * widthBetweenItems + startingPositionX;
-            var row = Mathf.FloorToInt(i / numberOfRows);
+            
+            var xPosition = (i % itemsPerRow) * widthBetweenItems + startingPositionX;
+            var row = Mathf.FloorToInt(i / (itemsPerRow * 1f));
             var yPosition = -startingPositionY - heightBetweenRows * (row + 1);
 
             rectTransform.anchoredPosition = new Vector2(xPosition, yPosition);
 
             var nestedLocation = new Vector3(50, -50, 1);
-            
+
             var mask = new GameObject();
             mask.name = $"{element}Mask";
             var maskImage = (Image)mask.AddComponent(typeof(Image));
@@ -55,7 +56,6 @@ public class ElementalReservesUI : MonoBehaviour
             casing.name = $"{element}Case";
             var casingImage = (Image)casing.AddComponent(typeof(Image));
             casingImage.sprite = Resources.Load<Sprite>($"ElementalMeters/Cases/{element}Case8Section");
-            print($"ElementalMeters/Cases/{element}Case8Sections");
             casingImage.transform.localScale = imageScale;
             casingImage.preserveAspect = true;
             casingImage.transform.SetParent(meter.transform);
@@ -63,7 +63,7 @@ public class ElementalReservesUI : MonoBehaviour
             casingImageTransform.anchoredPosition = nestedLocation;
             casingImageTransform.anchorMin = rectTransform.anchorMin;
             casingImageTransform.anchorMax = rectTransform.anchorMax;
-            
+
             // var fill = new GameObject();
             // fill.name = $"{element}Fill";
             // var fillImage = (Image)fill.AddComponent(typeof(Image));
