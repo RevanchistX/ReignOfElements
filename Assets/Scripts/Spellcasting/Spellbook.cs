@@ -12,8 +12,7 @@ namespace Spellcasting
         [SerializeField] private Canvas uiCanvas;
         private List<KeyCode> _inputSequence;
 
-        private Transform _spellbook;
-
+        private Transform _spellbookTransform;
 
         private readonly List<KeyCode> _allowedKeyCodes = new()
         {
@@ -24,23 +23,20 @@ namespace Spellcasting
         {
             var spellbook = new GameObject();
             spellbook.name = "Spellbook";
-            spellbook.transform.SetParent(uiCanvas.transform);
 
             var imageScale = new Vector3(3, 3, 3);
             var spellbookImage = (Image)spellbook.AddComponent(typeof(Image));
             spellbookImage.sprite = Resources.Load<Sprite>("UI/spellbook");
-            // spellbookImage.transform.localScale = imageScale;
             spellbookImage.preserveAspect = true;
             spellbookImage.transform.localScale = imageScale;
 
+            var spellbookRectTransform = spellbook.GetComponent<RectTransform>();
+            spellbookRectTransform.anchorMin = new Vector2(0, 0);
+            spellbookRectTransform.anchorMax = new Vector2(0, 0);
+            spellbookRectTransform.anchoredPosition = new Vector2(150, 120);
 
-            var rectTransform = spellbook.GetComponent<RectTransform>();
-            rectTransform.anchorMin = new Vector2(0, 0);
-            rectTransform.anchorMax = new Vector2(0, 0);
-            rectTransform.anchoredPosition = new Vector2(150, 120);
-
-
-            _spellbook = uiCanvas.transform.Find("Spellbook");
+            spellbook.transform.SetParent(uiCanvas.transform);
+            _spellbookTransform = spellbook.transform;
             LoadSpells();
         }
 
@@ -57,15 +53,13 @@ namespace Spellcasting
                 spellTextComponent.name = spell.Name;
                 spellTextComponent.text = spell.ToString();
                 spellTextComponent.autoSizeTextContainer = true;
-                spellTextComponent.transform.SetParent(_spellbook.transform);
+                spellTextComponent.transform.SetParent(_spellbookTransform);
                 var y = -(25 + index * 7);
                 var spellPosition = new Vector3(0, y, 0);
                 spellTextComponent.transform.localPosition = spellPosition;
                 var rectTransform = spellTextComponent.GetComponent<RectTransform>();
                 rectTransform.anchorMin = new Vector2(0.5f, 1f);
                 rectTransform.anchorMax = new Vector2(0.5f, 1f);
-
-
                 index++;
             }
         }
@@ -73,29 +67,20 @@ namespace Spellcasting
         private void FixedUpdate()
         {
             var isCtrlPressed = Input.GetKey(KeyCode.LeftControl);
-
-            
+            uiCanvas.enabled = isCtrlPressed;
             if (!isCtrlPressed)
             {
                 _inputSequence = new List<KeyCode>();
                 // _sequenceUI.text = "";
                 return;
             }
-            // _spellbook.gameObject.SetActive(!_spellbook.gameObject.activeSelf);
             if (_inputSequence.Count == 0) return;
             // _sequenceUI.text = string.Join("", _inputSequence);
-
-
-            foreach (var spell in Spell.SpellList)
-            {
-                var isSpellCast = _inputSequence.Count == spell.Sequence.Count &&
-                                  _inputSequence.SequenceEqual(spell.Sequence);
-                if (!isSpellCast) continue;
-                // _meshRenderer.materials[0].SetColor("_Color", spell.Elements[0].Color);
-                _inputSequence = new List<KeyCode>();
-                uiCanvas.enabled = false;
-                break;
-            }
+            if (!Spell.SpellList.Select(spell =>
+                        _inputSequence.Count == spell.Sequence.Count && _inputSequence.SequenceEqual(spell.Sequence))
+                    .Any(isSpellCast => isSpellCast)) return;
+            _inputSequence = new List<KeyCode>();
+            uiCanvas.enabled = false;
         }
 
 
