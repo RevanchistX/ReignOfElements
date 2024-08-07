@@ -18,9 +18,6 @@ public class PlayerController : MonoBehaviour
     private float moveSpeed = 6f;
 
     [SerializeField]
-    private float rotationSpeed = 15f;
-
-    [SerializeField]
     private float smoothTime = 0.2f;
 
     [Header("Jump Settings")]
@@ -30,23 +27,8 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float jumpDuration = 1f;
 
-    [SerializeField]
-    private float jumpCooldown;
-
-    [SerializeField]
-    private float gravityMultiplier = 3f;
-
-
-    [SerializeField]
-    private float dodgeDuration = 0.5f;
-
-    private float velocity;
-    private float jumpVelocity;
-
-
     private List<Timer.Timer> timers;
     private CountdownTimer jumpTimer;
-    private CountdownTimer dodgeTimer;
 
     private StateMachine stateMachine;
 
@@ -75,10 +57,8 @@ public class PlayerController : MonoBehaviour
 
         var locomotionState = new LocomotionState(this, animator);
         var jumpState = new JumpState(this, animator);
-        var dodgeState = new DodgeState(this, animator);
 
         stateMachine.AddTransition(locomotionState, jumpState, new FunctionPredicate(() => jumpTimer.IsRunning));
-        stateMachine.AddTransition(locomotionState, dodgeState, new FunctionPredicate(() => dodgeTimer.IsRunning));
         stateMachine.AddAnyTransition(locomotionState, new FunctionPredicate(ReturnToLocomotionState));
 
         stateMachine.SetState(locomotionState);
@@ -88,41 +68,25 @@ public class PlayerController : MonoBehaviour
     {
         return groundChecker.IsGrounded &&
                timers.All(timer => !timer.IsRunning);
-        // && !jumpTimer.IsRunning;
     }
 
     private void SetupTimers()
     {
         jumpTimer = new CountdownTimer(jumpDuration);
-        dodgeTimer = new CountdownTimer(dodgeDuration);
 
-        timers = new List<Timer.Timer>(5) { jumpTimer, dodgeTimer };
+        timers = new List<Timer.Timer>(5) { jumpTimer };
     }
 
     private void Start() => inputReader.EnablePlayerActions();
 
     private void OnEnable()
     {
-        // inputReader.Jump += OnDodge;
         inputReader.Jump += OnJump;
     }
 
     private void OnDisable()
     {
-        // inputReader.Jump -= OnDodge;
         inputReader.Jump -= OnJump;
-    }
-
-    private void OnDodge(bool performed)
-    {
-        if (performed && !dodgeTimer.IsRunning && groundChecker.IsGrounded)
-        {
-            dodgeTimer.Start();
-        }
-        // else
-        // {
-        //     dodgeTimer.Stop();
-        // }
     }
 
     private void OnJump(bool performed)
@@ -160,14 +124,6 @@ public class PlayerController : MonoBehaviour
     public void HandleJump()
     {
         playerRigidBody.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
-    }
-
-    public void HandleDodge()
-    {
-        // Debug.Log(inputReader.Direction.x);
-        // dodgeTimer.Stop();
-        // animator.SetFloat("Dodge", 1 );
-        animator.SetFloat("Dodge", inputReader.Direction.x < 0 ? 0 : 1);
     }
 
     public void HandleMovement()
