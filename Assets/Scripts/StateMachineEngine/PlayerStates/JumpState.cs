@@ -11,12 +11,7 @@ namespace StateMachineEngine.PlayerStates
         public override void OnEnter()
         {
             Animator.CrossFade(JumpHash, CrossFadeDuration);
-        }
-
-        public override void FixedUpdate()
-        {
             Player.HandleJump();
-            Player.HandleMovement();
         }
     }
 }
