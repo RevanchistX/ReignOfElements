@@ -1,27 +1,23 @@
-﻿using Timer;
+﻿using System;
 using UnityEngine;
 
 namespace StateMachineEngine.PlayerStates
 {
     public abstract class BaseState : IState
     {
-        protected readonly PlayerController Player;
         protected readonly Animator Animator;
+        protected readonly Action Callback;
 
         protected static readonly int LocomotionHash = Animator.StringToHash("Locomotion");
         protected static readonly int JumpHash = Animator.StringToHash("Jump");
-        protected static readonly int DodgeHash = Animator.StringToHash("Dodge");
-        protected static readonly int DashHash = Animator.StringToHash("Dash");
-        protected static readonly int AttackHash = Animator.StringToHash("Attack");
 
         protected const float CrossFadeDuration = 0.1f;
 
-        public readonly StopwatchTimer Timer = new();
 
-        protected BaseState(PlayerController player, Animator animator)
+        protected BaseState(Animator animator, Action callback)
         {
-            Player = player;
             Animator = animator;
+            Callback = callback;
         }
 
         public virtual void OnEnter()

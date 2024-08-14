@@ -6,7 +6,7 @@ using StateMachineEngine.PlayerStates;
 using Timer;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : BaseController
 {
     private Rigidbody playerRigidBody;
     private GroundChecker groundChecker;
@@ -27,22 +27,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField]
     private float jumpDuration = 1f;
 
-    private List<Timer.Timer> timers;
+
     private CountdownTimer jumpTimer;
-
-    private StateMachine stateMachine;
-
     private static readonly int Forward = Animator.StringToHash("forward");
     private static readonly int Lateral = Animator.StringToHash("lateral");
 
-    private void Awake()
-    {
-        SetupReferences();
-        SetupTimers();
-        SetupStateMachine();
-    }
-
-    private void SetupReferences()
+    public override void SetupReferences()
     {
         playerRigidBody = GetComponent<Rigidbody>();
         playerRigidBody.freezeRotation = true;
@@ -51,30 +41,30 @@ public class PlayerController : MonoBehaviour
         inputReader = ScriptableObject.CreateInstance<InputReader>();
     }
 
-    private void SetupStateMachine()
+    public override void SetupStateMachine()
     {
-        stateMachine = new StateMachine();
+        StateMachine = new StateMachine();
 
-        var locomotionState = new LocomotionState(this, animator);
-        var jumpState = new JumpState(this, animator);
+        var locomotionState = new LocomotionState(animator, HandleMovement);
+        var jumpState = new JumpState(animator, HandleJump);
 
-        stateMachine.AddTransition(locomotionState, jumpState, new FunctionPredicate(() => jumpTimer.IsRunning));
-        stateMachine.AddAnyTransition(locomotionState, new FunctionPredicate(ReturnToLocomotionState));
+        StateMachine.AddTransition(locomotionState, jumpState, new FunctionPredicate(() => jumpTimer.IsRunning));
+        StateMachine.AddAnyTransition(locomotionState, new FunctionPredicate(ReturnToLocomotionState));
 
-        stateMachine.SetState(locomotionState);
+        StateMachine.SetState(locomotionState);
     }
 
     private bool ReturnToLocomotionState()
     {
         return groundChecker.IsGrounded &&
-               timers.All(timer => !timer.IsRunning);
+               Timers.All(timer => !timer.IsRunning);
     }
 
-    private void SetupTimers()
+    public override void SetupTimers()
     {
         jumpTimer = new CountdownTimer(jumpDuration);
 
-        timers = new List<Timer.Timer>(5) { jumpTimer };
+        Timers = new List<Timer.Timer>(1) { jumpTimer };
     }
 
     private void Start() => inputReader.EnablePlayerActions();
@@ -99,25 +89,6 @@ public class PlayerController : MonoBehaviour
             case false when jumpTimer.IsRunning:
                 jumpTimer.Stop();
                 break;
-        }
-    }
-
-    private void Update()
-    {
-        stateMachine.Update();
-        HandleTimers();
-    }
-
-    private void FixedUpdate()
-    {
-        stateMachine.FixedUpdate();
-    }
-
-    private void HandleTimers()
-    {
-        foreach (var timer in timers)
-        {
-            timer.Tick(Time.deltaTime);
         }
     }
 

@@ -1,24 +1,26 @@
-﻿using UnityEngine;
+﻿using System;
+using InputEngine;
+using UnityEngine;
 
 namespace StateMachineEngine.PlayerStates
 {
     public class LocomotionState : BaseState
     {
-        public LocomotionState(PlayerController player, Animator animator) : base(player, animator)
+        private readonly InputReader inputReader;
+        private readonly Rigidbody playerRigidBody;
+
+        public LocomotionState(Animator animator, Action callback) : base(animator, callback)
         {
         }
 
         public override void OnEnter()
         {
-            base.OnEnter();
             Animator.CrossFade(LocomotionHash, CrossFadeDuration);
-            
         }
 
         public override void FixedUpdate()
         {
-            Player.HandleMovement();
+            Callback();
         }
-        
     }
 }

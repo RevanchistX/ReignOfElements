@@ -47,15 +47,7 @@ namespace Spellcasting
             new Spell("Lux",
                 new List<KeyCode> { KeyCode.E, KeyCode.E, KeyCode.E, KeyCode.Q },
                 new List<ElementType> { ElementType.Light }
-            ),
-            new Spell("Mætal",
-                new List<KeyCode> { KeyCode.W, KeyCode.R, KeyCode.W, KeyCode.R },
-                new List<ElementType> { ElementType.Metal }
-            ),
-            new Spell("Mynd",
-                new List<KeyCode> { KeyCode.R, KeyCode.W, KeyCode.R, KeyCode.W },
-                new List<ElementType> { ElementType.Mind }
-            ),
+            )
         };
     }
 }
