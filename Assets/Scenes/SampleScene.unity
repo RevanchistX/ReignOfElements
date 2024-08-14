@@ -2341,6 +2341,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e2c07bcdc37548ea8879caf2f1bf24ab, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  amplitude: 0.1
+  frequency: 5
+  movementSpeed: 10
+  tau: 6.2831855
 --- !u!120 &755861651
 LineRenderer:
   serializedVersion: 2
@@ -2362,7 +2366,7 @@ LineRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: fb48e062ad9b7324b81b9c540b603023, type: 2}
+  - {fileID: 2100000, guid: 3e36df56c6fa5f64085c14d9d4f6f8d9, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

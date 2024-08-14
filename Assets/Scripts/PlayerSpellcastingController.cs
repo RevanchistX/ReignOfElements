@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using InputEngine;
 using Spellcasting.SpellcastingStates;
@@ -25,6 +26,8 @@ public class PlayerSpellcastingController : BaseController
 
         StateMachine.SetState(baseState);
     }
+
+    public float lrWidth = 0.01f;
 
     public override void SetupReferences()
     {
@@ -68,7 +71,12 @@ public class PlayerSpellcastingController : BaseController
 
     private void OnHarvestElement(bool performed)
     {
-        if (!performed) return;
+        if (!performed)
+        {
+            hitObject = null;
+            return;
+        }
+
         var mousePosition = Mouse.current.position;
         var ray = camera.ScreenPointToRay(new Vector3(mousePosition.x.value, mousePosition.y.value));
         if (!Physics.Raycast(ray, out var hitInfo)) return;
@@ -86,8 +94,33 @@ public class PlayerSpellcastingController : BaseController
     {
         lineRenderer.positionCount = 0;
         if (!hitObject) return;
-        positions = new[] { handTransform.position, hitObject.transform.position };
-        lineRenderer.positionCount = 2;
-        lineRenderer.SetPositions(positions);
+        ChannelBetweenObjects(handTransform.position, hitObject.transform.position);
+        // positions = new[] { handTransform.position, hitObject.transform.position };
+        // positions = CalculateSinePositions();
+        // lineRenderer.positionCount = positions.Length;
+        // lineRenderer.SetPositions(positions);
+    }
+
+
+    public float amplitude = 0.01f;
+    public float frequency = 10;
+    public float movementSpeed = 10;
+    public float tau = 2 * Mathf.PI;
+
+    private void ChannelBetweenObjects(Vector3 startingPosition, Vector3 endingPosition)
+    {
+        var distance = (int)Vector3.Distance(handTransform.position, hitObject.transform.position) * 100;
+        lineRenderer.startWidth = lrWidth;
+        lineRenderer.endWidth = lrWidth * 10;
+        lineRenderer.positionCount = distance;
+        for (var point = 0; point < distance; point++)
+        {
+            var progress = (float)point / (distance - 1);
+            var x = Mathf.Lerp(startingPosition.x, endingPosition.x, progress);
+            var y = amplitude * Mathf.Sin(tau * frequency * x + Time.timeSinceLevelLoad * movementSpeed);
+            var yy = Mathf.Lerp(startingPosition.y, endingPosition.y, progress) + y;
+            var z = Mathf.Lerp(startingPosition.z, endingPosition.z, progress);
+            lineRenderer.SetPosition(point, new Vector3(x, yy, z));
+        }
     }
 }
