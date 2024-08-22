@@ -1,4 +1,4 @@
-namespace Timer
+namespace Utility.Timer
 {
     public class CountdownTimer : Timer
     {

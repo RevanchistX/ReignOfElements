@@ -1,6 +1,6 @@
 using System;
 
-namespace Timer
+namespace Utility.Timer
 {
     public abstract class Timer
     {
@@ -38,7 +38,7 @@ namespace Timer
         public void Resume() => IsRunning = true;
         public void Pause() => IsRunning = false;
         public void Reset() => Time = InitialTime;
-        
+
         public abstract void Tick(float deltaTime);
     }
 }

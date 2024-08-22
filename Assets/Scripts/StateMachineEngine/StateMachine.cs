@@ -6,9 +6,10 @@ namespace StateMachineEngine
 {
     public class StateMachine
     {
-        public StateNode CurrentNode { get; private set; }
+        private StateNode currentNode;
         private readonly Dictionary<Type, StateNode> nodes = new();
         private readonly HashSet<ITransition> anyTransitions = new();
+        public IState CurrentState => currentNode.State;
 
         public void Update()
         {
@@ -16,30 +17,30 @@ namespace StateMachineEngine
             if (transition != null)
                 ChangeState(transition.To);
 
-            CurrentNode.State?.Update();
+            currentNode.State?.Update();
         }
 
         public void FixedUpdate()
         {
-            CurrentNode.State?.FixedUpdate();
+            currentNode.State?.FixedUpdate();
         }
 
         public void SetState(IState state)
         {
-            CurrentNode = nodes[state.GetType()];
-            CurrentNode.State?.OnEnter();
+            currentNode = nodes[state.GetType()];
+            currentNode.State?.OnEnter();
         }
 
-        public void ChangeState(IState state)
+        private void ChangeState(IState state)
         {
-            if (state == CurrentNode.State) return;
+            if (state == currentNode.State) return;
 
-            var previousState = CurrentNode.State;
+            var previousState = currentNode.State;
             var nextState = nodes[state.GetType()].State;
 
             previousState?.OnExit();
             nextState?.OnEnter();
-            CurrentNode = nodes[state.GetType()];
+            currentNode = nodes[state.GetType()];
         }
 
         private ITransition GetTransition()
@@ -47,7 +48,7 @@ namespace StateMachineEngine
             foreach (var transition in anyTransitions.Where(transition => transition.Condition.Evaluate()))
                 return transition;
 
-            return CurrentNode.Transitions.FirstOrDefault(transition => transition.Condition.Evaluate());
+            return currentNode.Transitions.FirstOrDefault(transition => transition.Condition.Evaluate());
         }
 
         public void AddTransition(IState from, IState to, IPredicate condition)
@@ -60,7 +61,7 @@ namespace StateMachineEngine
             anyTransitions.Add(new Transition(GetOrAddNode(to).State, condition));
         }
 
-        public StateNode GetOrAddNode(IState state)
+        private StateNode GetOrAddNode(IState state)
         {
             var node = nodes.GetValueOrDefault(state.GetType());
             if (node != null) return node;
