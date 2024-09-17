@@ -10,6 +10,8 @@ namespace StateMachineEngine
         private readonly Dictionary<Type, StateNode> nodes = new();
         private readonly HashSet<ITransition> anyTransitions = new();
 
+        public IState CurrentState => CurrentNode.State;
+
         public void Update()
         {
             var transition = GetTransition();

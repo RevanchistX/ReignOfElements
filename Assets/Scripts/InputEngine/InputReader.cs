@@ -9,11 +9,15 @@ namespace InputEngine
     public class InputReader : ScriptableObject, IPlayerActions
     {
         public event UnityAction<bool> Jump = delegate { };
+        public event UnityAction<bool> Look = delegate { };
+        public event UnityAction<bool> Zoom = delegate { };
         public event UnityAction<bool> HarvestElement = delegate { };
 
         private PlayerInputActions inputActions;
 
         public Vector2 Direction => inputActions.Player.Move.ReadValue<Vector2>();
+        public Vector2 LookDirection => inputActions.Player.Look.ReadValue<Vector2>();
+        public Vector2 ZoomDirection => inputActions.Player.Zoom.ReadValue<Vector2>();
 
         private void OnEnable()
         {
@@ -44,7 +48,6 @@ namespace InputEngine
 
         public void OnHarvestElement(InputAction.CallbackContext context)
         {
-            
             switch (context.phase)
             {
                 case InputActionPhase.Started:
@@ -54,6 +57,28 @@ namespace InputEngine
                     HarvestElement.Invoke(false);
                     break;
             }
+        }
+
+        public void OnLook(InputAction.CallbackContext context)
+        {
+            // Debug.Log($"mouse: {context.ReadValue<Vector2>()}");
+            // Debug.Log($"look: {LookDirection}");
+            var isPerformed = context.phase == InputActionPhase.Performed;
+            if (!isPerformed) return;
+            // Debug.Log(context.ReadValue<Vector2>());
+            Look.Invoke(true);
+            // Look.Invoke(context.ReadValue<Vector2>(), context.phase == InputActionPhase.Performed);
+        }
+
+        public void OnZoom(InputAction.CallbackContext context)
+        {
+           Zoom.Invoke(true);
+        }
+
+        private bool IsDeviceMouse(InputAction.CallbackContext context)
+        {
+            Debug.Log($"Device name: {context.control.device.name}");
+            return context.control.device.name == "Mouse";
         }
     }
 }
